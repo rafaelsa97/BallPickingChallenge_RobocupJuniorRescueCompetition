@@ -1,0 +1,42 @@
+#VRML_SIM V8.1.0 utf8
+
+PROTO Wall [
+  field SFVec3f size 0 0 0
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+  field SFColor supportColor 0.7 0.7 0.7
+  field SFNode physics NULL
+] {
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor IS supportColor
+        }
+        #texture ImageTexture {
+        #  url IS supportTextureUrl
+        #}
+      }
+      geometry Box {
+	    size IS size
+	  }
+    }
+  ]
+  boundingObject Group {
+    children [
+      Transform {
+        translation 0 0 0
+        children [
+          Box {
+            size IS size
+          }
+        ]
+      }
+    ]
+  }
+  physics IS physics
+}
+}

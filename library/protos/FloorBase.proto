@@ -1,0 +1,47 @@
+#VRML_SIM V8.1.0 utf8
+
+PROTO FloorBase [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+  field SFColor supportColor 1 0 0
+  #field MFString supportTextureUrl "textures/base_support.jpg"
+  field SFNode physics NULL
+] {
+Solid {
+  translation IS translation
+  rotation IS rotation
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          diffuseColor IS supportColor
+        }
+        #texture ImageTexture {
+        #  url IS supportTextureUrl
+        #}
+      }
+      geometry Cylinder {
+	    height 0.05
+		radius 0.15
+		#top FALSE
+	  }
+    }
+  ]
+  boundingObject Group {
+    children [
+      Transform {
+        translation 0 0 0
+        children [
+          Cylinder {
+            height 0.05
+            radius 0.15
+            subdivision 20
+            #top FALSE
+          }
+        ]
+      }
+    ]
+  }
+  physics IS physics
+}
+}

@@ -1,0 +1,108 @@
+#VRML_SIM V8.1.0 utf8
+# A configurable rectangle arena composed of a floor surrounded by walls
+
+PROTO RectangleArena [
+  field SFVec3f translation 0 0 0
+  field SFRotation rotation 0 1 0 0
+  field SFString contactMaterial "default"
+  field SFVec2f floorSize 1 1
+  field MFString floorTextureUrl "textures/parquetry.jpg"
+  field SFVec2f floorTileSize 0.5 0.5
+  field SFFloat wallThickness 0.01
+  field SFFloat wallHeight 0.1
+  field MFString wallTextureUrl "textures/metal.jpg"
+  field SFVec2f wallTileSize 0.1 0.1
+  field SFInt32 subdivision 8
+]
+{
+  %{
+   local floorSize = fields.floorSize.value
+   if floorSize.x <= 0.0 or floorSize.y <= 0.0 then
+     io.stderr:write("'floorSize' must contain positive values\n")
+     floorSize = fields.floorSize.defaultValue
+   end
+
+   local wallThickness = fields.wallThickness.value
+   if wallThickness <= 0 then
+     io.stderr:write("'wallThickness' must be positive\n")
+     wallThickness = fields.wallThickness.defaultValue
+   end
+
+   local wallHeight = fields.wallHeight.value
+   if wallHeight <= 0 then
+     io.stderr:write("'wallHeight' must be positive\n")
+     wallHeight = fields.wallHeight.defaultValue
+   end
+
+   local wallTextureScaleA = { x = 1; y = 1 }
+   local wallTextureScaleB = { x = 1; y = 1 }
+   if fields.wallTileSize.value.x >= 0 and fields.wallTileSize.value.y > 0.0 then -- avoid a zero division and negative values
+     wallTextureScaleA.x = floorSize.y / fields.wallTileSize.value.x
+     wallTextureScaleA.y = floorSize.y / fields.wallTileSize.value.y
+     wallTextureScaleB.x = (floorSize.x + 2 * wallThickness) / fields.wallTileSize.value.x
+     wallTextureScaleB.y = (floorSize.x + 2 * wallThickness) / fields.wallTileSize.value.y
+   else
+     io.stderr:write("'wallTextureScale' must contain positive values\n")
+   end
+
+  }%
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    children [
+      Floor {
+        size %{= floorSize.x }% %{= floorSize.y }%
+        tileSize IS floorTileSize
+        texture IS floorTextureUrl
+        subdivision IS subdivision
+        contactMaterial IS contactMaterial
+      }
+      SolidBox {
+        translation %{= floorSize.x / 2 + wallThickness / 2 }% %{= wallHeight / 2 }% 0
+        size %{= wallThickness }% %{= wallHeight }% %{= floorSize.y }%
+        appearance DEF SQUARE_ARENA_APPEARANCE_A Appearance {
+          material Material {
+          }
+          texture ImageTexture {
+            url IS wallTextureUrl
+          }
+          textureTransform TextureTransform {
+            scale %{= wallTextureScaleA.x }% %{= wallTextureScaleA.y }% 
+          }
+        }
+        subdivision IS subdivision
+        contactMaterial IS contactMaterial
+      }
+      SolidBox {
+        translation %{= -(floorSize.x / 2 + wallThickness / 2) }% %{= wallHeight / 2 }% 0
+        size %{= wallThickness }% %{= wallHeight }% %{= floorSize.y }%
+        appearance USE SQUARE_ARENA_APPEARANCE_A
+        subdivision IS subdivision
+        contactMaterial IS contactMaterial
+      }
+      SolidBox {
+        translation 0 %{= wallHeight / 2 }% %{= floorSize.y / 2 + wallThickness / 2 }%
+        size %{= floorSize.x + 2 * wallThickness }% %{= wallHeight }% %{= wallThickness }%
+        appearance DEF SQUARE_ARENA_APPEARANCE_B Appearance {
+          material Material {
+          }
+          texture ImageTexture {
+            url IS wallTextureUrl
+          }
+          textureTransform TextureTransform {
+            scale %{= wallTextureScaleB.x }% %{= wallTextureScaleB.y }% 
+          }
+        }
+        subdivision IS subdivision
+        contactMaterial IS contactMaterial
+      }
+      SolidBox {
+        translation 0 %{= wallHeight / 2 }% %{= -(floorSize.y / 2 + wallThickness / 2) }%
+        size %{= floorSize.x + 2 * wallThickness }% %{= wallHeight }% %{= wallThickness }%
+        appearance USE SQUARE_ARENA_APPEARANCE_B
+        subdivision IS subdivision
+        contactMaterial IS contactMaterial
+      }
+    ]
+  }
+}
